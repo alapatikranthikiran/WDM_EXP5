@@ -22,13 +22,15 @@ The Boolean model in Information Retrieval (IR) is a fundamental model used for 
     <p>c) For each term in the query, it retrieves documents containing that term and performs Boolean operations (AND, OR, NOT) based on the query's structure.
 
 ### Program:
+```
+import numpy as np
+import pandas as pd
 
-    import numpy as np
-    import pandas as pd
-    class BooleanRetrieval:
-        def __init__(self):
-            self.index = {}
-            self.documents_matrix = None
+class BooleanRetrieval:
+
+    def __init__(self):
+        self.index = {}
+        self.documents_matrix = None
 
     def index_document(self, doc_id, text):
         terms = text.lower().split()
@@ -37,6 +39,7 @@ The Boolean model in Information Retrieval (IR) is a fundamental model used for 
         for term in terms:
             if term not in self.index:
                 self.index[term] = set()
+
             self.index[term].add(doc_id)
 
     def create_documents_matrix(self, documents):
@@ -44,17 +47,25 @@ The Boolean model in Information Retrieval (IR) is a fundamental model used for 
         num_docs = len(documents)
         num_terms = len(terms)
 
-        self.documents_matrix = np.zeros((num_docs, num_terms), dtype=int)
+        self.documents_matrix = np.zeros(
+            (num_docs, num_terms),
+            dtype=int
+        )
 
         for i, (doc_id, text) in enumerate(documents.items()):
             doc_terms = text.lower().split()
+
             for term in doc_terms:
                 if term in self.index:
                     term_id = terms.index(term)
                     self.documents_matrix[i, term_id] = 1
 
     def print_documents_matrix_table(self):
-        df = pd.DataFrame(self.documents_matrix, columns=self.index.keys())
+        df = pd.DataFrame(
+            self.documents_matrix,
+            columns=self.index.keys()
+        )
+
         print(df)
 
     def print_all_terms(self):
@@ -62,9 +73,56 @@ The Boolean model in Information Retrieval (IR) is a fundamental model used for 
         print(list(self.index.keys()))
 
     def boolean_search(self, query):
-        # TYPE YOUR CODE HERE
+        query = query.lower().split()
+
+        # Get all document IDs
+        all_docs = set(range(1, len(self.documents_matrix) + 1))
+
+        if not query:
+            return set()
+
+        # Handle first term
+        if query[0] == "not":
+            if len(query) < 2:
+                return set()
+
+            term = query[1]
+
+            result = all_docs - self.index.get(term, set())
+
+            i = 2
+
+        else:
+            result = self.index.get(query[0], set())
+
+            i = 1
+
+        # Process Boolean operators
+        while i < len(query):
+
+            operator = query[i]
+
+            if i + 1 >= len(query):
+                break
+
+            term = query[i + 1]
+
+            if operator == "and":
+                result = result & self.index.get(term, set())
+
+            elif operator == "or":
+                result = result | self.index.get(term, set())
+
+            elif operator == "not":
+                result = result - self.index.get(term, set())
+
+            i += 2
+
+        return sorted(result)
+
 
 if __name__ == "__main__":
+
     indexer = BooleanRetrieval()
 
     documents = {
@@ -77,17 +135,27 @@ if __name__ == "__main__":
         indexer.index_document(doc_id, text)
 
     indexer.create_documents_matrix(documents)
+
     indexer.print_documents_matrix_table()
+
     indexer.print_all_terms()
 
     query = input("Enter your boolean query: ")
+
     results = indexer.boolean_search(query)
+
     if results:
         print(f"Results for '{query}': {results}")
     else:
         print("No results found for the query.")
+```
+   
 
 
 ### Output:
+<img width="1022" height="407" alt="Screenshot 2026-08-18 110802" src="https://github.com/user-attachments/assets/3709a710-cb7c-4c78-a873-2fca02d5653d" />
+<img width="1005" height="393" alt="Screenshot 2026-08-18 110847" src="https://github.com/user-attachments/assets/c5f155e0-3615-4aed-986c-8db655e27d05" />
+<img width="1048" height="399" alt="Screenshot 2026-08-18 110933" src="https://github.com/user-attachments/assets/bb7e3cf2-f14c-4c9b-b802-c42473462968" />
 
 ### Result:
+Thus Information Retrieval Using Boolean Model in Python is implemented.
